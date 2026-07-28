@@ -59,10 +59,7 @@ export const test = base.extend<AppFixtures>({
     await use(new ContactApiClient(request));
   },
 
-  // =========================================================================
-  // 3. AUTOMATED HYBRID SEEDING FIXTURE
-  // =========================================================================
-
+  
   authedUser: async ({ userApi }, use) => {
     // Generate dynamic user details
     const user = TestDataGenerator.generateUser();

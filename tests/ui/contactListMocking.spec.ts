@@ -1,13 +1,5 @@
 import { test, expect } from '../../fixtures/mockFixtures';
 
-/**
- 
- * 
- * Demonstrates advanced SDET capabilities:
- * 1. UI testing against mocked API responses (stubbing).
- * 2. Simulating backend failure scenarios (resilience testing).
- * 3. Client-side request payload injection (security & schema validation).
- */
 test.describe('Contact List - Network Interception & Mocking Suite', () => {
 
   test.beforeEach(async ({ page, loginPage, authedUser }) => {
