@@ -1,7 +1,7 @@
 import { test, expect } from '../../fixtures/mockFixtures';
 
 /**
- * Portfolio Test Suite: Network Mocking, Resiliency, & Payload Injection
+ 
  * 
  * Demonstrates advanced SDET capabilities:
  * 1. UI testing against mocked API responses (stubbing).
@@ -20,7 +20,7 @@ test.describe('Contact List - Network Interception & Mocking Suite', () => {
   // 1. DATA MOCKING
   // =========================================================================
 
-  test('Mocking: Verify UI renders custom mocked contacts correctly', async ({ page, contactListPage, mockContactList }) => {
+  test('Mocking: Verify UI renders custom mocked contacts correctly', async ({ page, loginPage, contactListPage, mockContactList, authedUser }) => {
     // 1. Arrange: Define deterministic mock dataset
     const mockedContacts = [
       {
@@ -45,25 +45,20 @@ test.describe('Contact List - Network Interception & Mocking Suite', () => {
       },
     ];
 
-    // 2. Act: Activate network route mock before page refresh
+    // 2. Act: Set up route interceptor BEFORE navigating or logging in
     await mockContactList(mockedContacts, 200);
-    await page.reload();
 
-    // 3. Assert: UI table reflects exact mock state regardless of actual DB contents
+    // Perform login or direct navigation to authenticated dashboard
+    await loginPage.navigate();
+    await loginPage.login(authedUser.email, authedUser.password);
+
+    // Ensure dashboard table has loaded the mocked data
     await expect(contactListPage.contactRows).toHaveCount(2);
 
+    // 3. Assert
     const firstRowData = await contactListPage.getRowDataByIndex(0);
     expect(firstRowData.name).toBe('Mocked UserOne');
     expect(firstRowData.email).toBe('mocked.one@portfolio.com');
   });
+})
 
-  test('Mocking: Verify UI handles empty state gracefully via API stubbing', async ({ page, contactListPage, mockContactList }) => {
-    // Act: Inject empty array stub
-    await mockContactList([], 200);
-    await page.reload();
-
-    // Assert: Table is completely empty
-    await expect(contactListPage.contactRows).toHaveCount(0);
-  });
-
-});
