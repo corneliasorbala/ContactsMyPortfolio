@@ -1,4 +1,29 @@
-steps:
+name: Deploy Playwright Report to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# Required permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -17,13 +42,11 @@ steps:
       # 1. RUN TESTS TO GENERATE THE REPORT FIRST
       - name: Run Playwright tests
         run: npx playwright test
-        # Use continue-on-error or always upload if you want the report even when tests fail:
-        if: always() 
+        if: always()
 
-     # 2. THEN UPLOAD THE REPORT
+      # 2. THEN UPLOAD THE REPORT
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
-        # Uploads on pass or fail, but skips if job is cancelled
         if: '!cancelled()'
         with:
           path: 'playwright-report'
@@ -31,4 +54,5 @@ steps:
       # 3. DEPLOY
       - name: Deploy to GitHub Pages
         id: deployment
+        if: '!cancelled()'
         uses: actions/deploy-pages@v4
