@@ -23,7 +23,7 @@ steps:
       # 2. THEN UPLOAD THE REPORT
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
-        if: !cancelled() # Uploads on pass or fail, but skips if job is cancelled
+        if: '!cancelled()' # Uploads on pass or fail, but skips if job is cancelled
         with:
         path: 'playwright-report'
 
@@ -31,4 +31,3 @@ steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        
