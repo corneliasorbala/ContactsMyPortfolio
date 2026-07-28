@@ -44,8 +44,9 @@ jobs:
         run: npx playwright test
         if: always()
 
-      # 2. THEN UPLOAD THE REPORT
+     # 2. UPLOAD THE REPORT
       - name: Upload Pages Artifact
+        id: upload-step
         uses: actions/upload-pages-artifact@v3
         if: '!cancelled()'
         with:
@@ -54,5 +55,6 @@ jobs:
       # 3. DEPLOY
       - name: Deploy to GitHub Pages
         id: deployment
-        if: '!cancelled()'
+        # Only attempt deployment if the upload step actually succeeded
+        if: steps.upload-step.outcome == 'success'
         uses: actions/deploy-pages@v4
