@@ -20,12 +20,13 @@ steps:
         # Use continue-on-error or always upload if you want the report even when tests fail:
         if: always() 
 
-      # 2. THEN UPLOAD THE REPORT
+     # 2. THEN UPLOAD THE REPORT
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
-        if: '!cancelled()' # Uploads on pass or fail, but skips if job is cancelled
+        # Uploads on pass or fail, but skips if job is cancelled
+        if: '!cancelled()'
         with:
-        path: 'playwright-report'
+          path: 'playwright-report'
 
       # 3. DEPLOY
       - name: Deploy to GitHub Pages
