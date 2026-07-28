@@ -1,84 +1,39 @@
-name: Playwright Test Suite & Live Report Deployment
+name: Deploy HTML Report to GitHub Pages
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
-    inputs:
-      grep:
-        description: 'Run specific test tags (e.g., @api, @ui, @smoke)'
-        required: false
-        default: ''
 
-# Set permissions for GitHub Actions to deploy to GitHub Pages
+# Required permissions for GitHub Pages deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Execute Playwright Automation Suite
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js Runtime
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Cache Playwright Browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-
-      - name: Install System Dependencies for Cached Browsers
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
-
-      - name: Execute Playwright Tests
-        env:
-          CI: true
-        run: |
-          npx playwright test ${{ github.event.inputs.grep && format('--grep "{0}"', github.event.inputs.grep) || '' }}
-
-      - name: Upload HTML Report Artifact
-        if: always()
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: playwright-report/
-          retention-days: 14
-
-  deploy-report:
-    name: Deploy HTML Report to GitHub Pages
-    needs: test
-    if: always() && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Add your test execution / build step here
+      # e.g., npm ci, npx playwright test, etc.
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          
+          path: 'playwright-report' 
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
