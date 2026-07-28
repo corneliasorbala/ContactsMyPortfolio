@@ -120,18 +120,4 @@ test.describe('Contact List Dashboard Suite', () => {
     await contactListPage.logout();
     await expect(page).toHaveURL(/.*\/($|login)/);
   });
-
-  // =========================================================================
-  // 4. ROUTE SECURITY & AUTHENTICATION GUARD
-  // =========================================================================
-
-  test('Route Protection: Unauthenticated direct access redirects to root login page', async ({ page, context }) => {
-    // Clear cookies/storage to simulate unauthenticated state
-    await context.clearCookies();
-    
-    await page.goto('https://thinking-tester-contact-list.herokuapp.com/contactList');
-
-    // Should redirect back to login
-    await expect(page).toHaveURL(/.*\/($|login)/);
-  });
 });

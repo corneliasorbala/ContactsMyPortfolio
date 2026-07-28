@@ -1,39 +1,33 @@
-name: Deploy HTML Report to GitHub Pages
-
-on:
-  push:
-    branches: [ main, master ]
-
-# Required permissions for GitHub Pages deployment
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
+steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Add your test execution / build step here
-      # e.g., npm ci, npx playwright test, etc.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      # 1. RUN TESTS TO GENERATE THE REPORT FIRST
+      - name: Run Playwright tests
+        run: npx playwright test
+        # Use continue-on-error or always upload if you want the report even when tests fail:
+        if: always() 
+
+      # 2. THEN UPLOAD THE REPORT
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
+        if: !cancelled() # Uploads on pass or fail, but skips if job is cancelled
         with:
-          
-          path: 'playwright-report' 
+        path: 'playwright-report'
 
+      # 3. DEPLOY
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
