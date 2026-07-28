@@ -1,15 +1,10 @@
-name: Playwright Test Automation Suite
+name: Playwright Test Suite & Live Report Deployment
 
-# =============================================================================
-# TRIGGERS & EVENT CONFIGURATION
-# =============================================================================
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  schedule:
-    - cron: '0 0 * * *'   # Nightly regression run at 00:00 UTC
   workflow_dispatch:
     inputs:
       grep:
@@ -17,31 +12,24 @@ on:
         required: false
         default: ''
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
+# Set permissions for GitHub Actions to deploy to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
 jobs:
-  # ===========================================================================
-  # JOB: PLAYWRIGHT MATRIX EXECUTION
-  # ===========================================================================
-  playwright-tests:
-    name: Run Suite (${{ matrix.project }})
+  test:
+    name: Execute Playwright Automation Suite
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [chromium, firefox, webkit]
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout Source Code
         uses: actions/checkout@v4
 
       - name: Setup Node.js Runtime
@@ -50,7 +38,7 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Install Project Dependencies
+      - name: Install Dependencies
         run: npm ci
 
       - name: Cache Playwright Browsers
@@ -62,75 +50,35 @@ jobs:
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps ${{ matrix.project }}
+        run: npx playwright install --with-deps
 
-      - name: Install Linux System Dependencies for Cached Browsers
+      - name: Install System Dependencies for Cached Browsers
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps ${{ matrix.project }}
+        run: npx playwright install-deps
 
       - name: Execute Playwright Tests
         env:
           CI: true
-          BASE_URL: ${{ secrets.BASE_URL }}
-          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
         run: |
-          npx playwright test \
-            --project=${{ matrix.project }} \
-            ${{ github.event.inputs.grep && format('--grep "{0}"', github.event.inputs.grep) || '' }}
+          npx playwright test ${{ github.event.inputs.grep && format('--grep "{0}"', github.event.inputs.grep) || '' }}
 
-      - name: Upload HTML Test Report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+      - name: Upload HTML Report Artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 14
 
-      - name: Upload Failure Artifacts (Traces & Screenshots)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-failure-artifacts-${{ matrix.project }}
-          path: test-results/
-          retention-days: 7
-
-  # ===========================================================================
-  # JOB: PUBLISH REPORT TO GITHUB PAGES (portfolio-friendly, live link)
-  # Only publishes the Chromium report to keep it simple - one clean URL.
-  # ===========================================================================
-  publish-report:
-    name: Publish Report to GitHub Pages
-    needs: playwright-tests
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+  deploy-report:
+    name: Deploy HTML Report to GitHub Pages
+    needs: test
+    if: always() && github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
-      - name: Download Chromium Report
-        uses: actions/download-artifact@v4
-        with:
-          name: playwright-report-chromium
-          path: playwright-report
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: playwright-report
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  # ===========================================================================
-  # JOB: CI SUMMARY
-  # ===========================================================================
-  pipeline-summary:
-    name: CI Pipeline Execution Summary
-    needs: playwright-tests
-    if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Post Markdown Pipeline Summary
-        run: |
-          echo "### 🚀 Automated Test Suite Execution Complete" >> $GITHUB_STEP_SUMMARY
-          echo "Playwright tests ran across **Chromium**, **Firefox**, and **WebKit**." >> $GITHUB_STEP_SUMMARY
-          echo "To inspect traces, screenshots, or failure logs, download artifacts from the **Summary** tab above." >> $GITHUB_STEP_SUMMARY

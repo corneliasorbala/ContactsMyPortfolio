@@ -1,0 +1,20 @@
+
+
+{
+  "name": "contact-list-playwright-framework",
+  "version": "1.0.0",
+  "description": "Portfolio SDET Automation Framework using Playwright + TypeScript for UI and API Testing",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test tests/ui",
+    "test:api": "npx playwright test tests/api",
+    "test:headed": "npx playwright test --headed",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@playwright/test": "^1.42.1",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}
