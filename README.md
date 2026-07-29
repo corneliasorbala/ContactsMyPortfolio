@@ -66,3 +66,42 @@ Prerequisites
 Node.js: v20.0.0 or higher
 
 npm: v9.0.0 or higher
+
+Installation
+Clone the repository:
+
+Bash
+git clone [https://github.com/corneliasorbala/ContactsMyPortfolio.git](https://github.com/corneliasorbala/ContactsMyPortfolio.git)
+cd ContactsMyPortfolio
+Install project dependencies:
+
+Bash
+npm ci
+Install Playwright browser binaries:
+
+Bash
+npx playwright install --with-deps
+
+Command,Description
+npx playwright test,Executes all API and UI test suites headlessly across all matrix browsers
+npx playwright test --ui,Opens Playwright's interactive UI mode for visual debugging
+npx playwright test tests/api/,Runs backend REST API test suites exclusively
+npx playwright test --project=chromium,Runs test execution on Chromium browser only
+npx playwright show-report,Serves local HTML test report with embedded traces and screenshots
+
+
+🛠 Technology Stack
+Test Framework: Playwright
+
+Programming Language: TypeScript
+
+Data Generation: @faker-js/faker
+
+CI/CD Platform: GitHub Actions
+
+Report Hosting: GitHub Pages
+
+👩‍💻 Author
+Cornelia Sorbala — Software Development Engineer in Test (SDET) / QA Automation Engineer
+
+GitHub: @corneliasorbala

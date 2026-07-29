@@ -2,7 +2,7 @@ import { test, expect } from '../../fixtures/mockFixtures';
 
 test.describe('Contact List - Network Interception & Mocking Suite', () => {
 
-  test.beforeEach(async ({ page, loginPage, authedUser }) => {
+  test.beforeEach(async ({ loginPage, authedUser }) => {
     // Authenticate and navigate to dashboard state
     await loginPage.navigate();
     await loginPage.login(authedUser.email, authedUser.password);
@@ -12,7 +12,7 @@ test.describe('Contact List - Network Interception & Mocking Suite', () => {
   // 1. DATA MOCKING
   // =========================================================================
 
-  test('Mocking: Verify UI renders custom mocked contacts correctly', async ({ page, loginPage, contactListPage, mockContactList, authedUser }) => {
+  test('Mocking: Verify UI renders custom mocked contacts correctly', async ({ loginPage, contactListPage, mockContactList, authedUser }) => {
     // 1. Arrange: Define deterministic mock dataset
     const mockedContacts = [
       {
